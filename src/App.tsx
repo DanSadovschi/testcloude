@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { supabase } from './lib/supabase';
+import { supabase, supabaseMisconfigured } from './lib/supabase';
 import { useAuthStore } from './stores/authStore';
 import AuthGuard from './components/AuthGuard';
 import Layout from './components/Layout';
@@ -29,6 +29,21 @@ export default function App() {
 
     return () => subscription.unsubscribe();
   }, [setSession]);
+
+  if (supabaseMisconfigured) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="max-w-md space-y-4 text-center">
+          <h1 className="text-2xl font-bold text-red-600">Missing Configuration</h1>
+          <p className="text-gray-600">
+            Set <code className="bg-gray-100 px-1 rounded">VITE_SUPABASE_URL</code> and{' '}
+            <code className="bg-gray-100 px-1 rounded">VITE_SUPABASE_ANON_KEY</code> environment
+            variables, then redeploy.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <BrowserRouter>
