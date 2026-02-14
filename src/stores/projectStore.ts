@@ -7,7 +7,8 @@ interface ProjectState {
   loading: boolean;
   error: string | null;
   fetchProjects: () => Promise<void>;
-  createProject: (name: string, color: string) => Promise<boolean>;
+  createProject: (name: string, color: string, hourlyRate: number | null) => Promise<boolean>;
+  updateProject: (id: string, updates: Partial<Pick<Project, 'name' | 'color' | 'hourly_rate'>>) => Promise<boolean>;
   deleteProject: (id: string) => Promise<{ ok: boolean; message?: string }>;
 }
 
@@ -30,13 +31,27 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     set({ projects: data ?? [], loading: false });
   },
 
-  createProject: async (name, color) => {
+  createProject: async (name, color, hourlyRate) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return false;
 
     const { error } = await supabase
       .from('projects')
-      .insert({ name, color, user_id: user.id });
+      .insert({ name, color, hourly_rate: hourlyRate, user_id: user.id });
+
+    if (error) {
+      set({ error: error.message });
+      return false;
+    }
+    await get().fetchProjects();
+    return true;
+  },
+
+  updateProject: async (id, updates) => {
+    const { error } = await supabase
+      .from('projects')
+      .update(updates)
+      .eq('id', id);
 
     if (error) {
       set({ error: error.message });
@@ -47,7 +62,6 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   },
 
   deleteProject: async (id) => {
-    // Check if project has entries
     const { count, error: countError } = await supabase
       .from('time_entries')
       .select('*', { count: 'exact', head: true })

@@ -16,6 +16,8 @@ export default function StatsPage() {
   const { projects, fetchProjects } = useProjectStore();
   const [todaySeconds, setTodaySeconds] = useState(0);
   const [weekSeconds, setWeekSeconds] = useState(0);
+  const [billableSeconds, setBillableSeconds] = useState(0);
+  const [billableAmount, setBillableAmount] = useState(0);
   const [projectTotals, setProjectTotals] = useState<ProjectTotal[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -34,34 +36,40 @@ export default function StatsPage() {
       0
     );
 
-    // Fetch week total
+    // Fetch week entries with billable + project info
     const { data: weekData } = await supabase
       .from('time_entries')
-      .select('duration_seconds')
+      .select('project_id, duration_seconds, billable')
       .not('end_time', 'is', null)
       .gte('start_time', getStartOfWeek());
 
-    const weekTotal = (weekData ?? []).reduce(
-      (sum, e) => sum + (e.duration_seconds ?? 0),
-      0
-    );
+    const weekEntries = weekData ?? [];
+    const weekTotal = weekEntries.reduce((sum, e) => sum + (e.duration_seconds ?? 0), 0);
 
-    // Fetch all entries for per-project totals (this week)
-    const { data: allEntries } = await supabase
-      .from('time_entries')
-      .select('project_id, duration_seconds')
-      .not('end_time', 'is', null)
-      .gte('start_time', getStartOfWeek());
+    // Billable stats
+    const billableEntries = weekEntries.filter((e) => e.billable);
+    const billableSecs = billableEntries.reduce((sum, e) => sum + (e.duration_seconds ?? 0), 0);
+
+    // Calculate earnings based on project hourly rates
+    let earnings = 0;
+    for (const entry of billableEntries) {
+      const project = projects.find((p) => p.id === entry.project_id);
+      if (project?.hourly_rate) {
+        earnings += (project.hourly_rate * (entry.duration_seconds ?? 0)) / 3600;
+      }
+    }
 
     // Group by project
     const byProject = new Map<string | null, number>();
-    for (const entry of allEntries ?? []) {
+    for (const entry of weekEntries) {
       const key = entry.project_id;
       byProject.set(key, (byProject.get(key) ?? 0) + (entry.duration_seconds ?? 0));
     }
 
     setTodaySeconds(todayTotal);
     setWeekSeconds(weekTotal);
+    setBillableSeconds(billableSecs);
+    setBillableAmount(earnings);
     setProjectTotals(
       Array.from(byProject.entries()).map(([projectId, totalSeconds]) => {
         const project = projects.find((p) => p.id === projectId);
@@ -89,16 +97,21 @@ export default function StatsPage() {
   if (loading) {
     return (
       <div>
-        <h1 className="text-xl font-bold mb-4">Stats</h1>
-        <p className="text-gray-500">Loading stats...</p>
+        <h1 className="text-xl font-bold mb-4 dark:text-white">Stats</h1>
+        <p className="text-gray-500 dark:text-gray-400">Loading stats...</p>
       </div>
     );
   }
 
   return (
     <div>
-      <h1 className="text-xl font-bold mb-4">Stats</h1>
-      <StatsCards todaySeconds={todaySeconds} weekSeconds={weekSeconds} />
+      <h1 className="text-xl font-bold mb-4 dark:text-white">Stats</h1>
+      <StatsCards
+        todaySeconds={todaySeconds}
+        weekSeconds={weekSeconds}
+        billableSeconds={billableSeconds}
+        billableAmount={billableAmount}
+      />
       <ProjectTotals totals={projectTotals} />
     </div>
   );

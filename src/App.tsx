@@ -10,17 +10,16 @@ import TimerPage from './pages/TimerPage';
 import ProjectsPage from './pages/ProjectsPage';
 import EntriesPage from './pages/EntriesPage';
 import StatsPage from './pages/StatsPage';
+import TagsPage from './pages/TagsPage';
 
 export default function App() {
   const setSession = useAuthStore((s) => s.setSession);
 
   useEffect(() => {
-    // Check initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
     });
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         setSession(session);
@@ -32,12 +31,12 @@ export default function App() {
 
   if (supabaseMisconfigured) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="max-w-md space-y-4 text-center">
           <h1 className="text-2xl font-bold text-red-600">Missing Configuration</h1>
-          <p className="text-gray-600">
-            Set <code className="bg-gray-100 px-1 rounded">VITE_SUPABASE_URL</code> and{' '}
-            <code className="bg-gray-100 px-1 rounded">VITE_SUPABASE_ANON_KEY</code> environment
+          <p className="text-gray-600 dark:text-gray-400">
+            Set <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded">VITE_SUPABASE_URL</code> and{' '}
+            <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded">VITE_SUPABASE_ANON_KEY</code> environment
             variables, then redeploy.
           </p>
         </div>
@@ -58,6 +57,7 @@ export default function App() {
             <Route path="/" element={<TimerPage />} />
             <Route path="/entries" element={<EntriesPage />} />
             <Route path="/projects" element={<ProjectsPage />} />
+            <Route path="/tags" element={<TagsPage />} />
             <Route path="/stats" element={<StatsPage />} />
           </Route>
         </Route>

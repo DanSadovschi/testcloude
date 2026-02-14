@@ -8,10 +8,11 @@ interface TimerState {
   elapsedSeconds: number;
   loading: boolean;
   fetchRunningEntry: () => Promise<void>;
-  startTimer: (description: string, projectId: string | null) => Promise<void>;
+  startTimer: (description: string, projectId: string | null, billable: boolean) => Promise<void>;
   stopTimer: () => Promise<void>;
   updateRunningDescription: (description: string) => void;
   updateRunningProject: (projectId: string | null) => void;
+  updateRunningBillable: (billable: boolean) => void;
   tick: () => void;
 }
 
@@ -41,8 +42,7 @@ export const useTimerStore = create<TimerState>((set, get) => ({
     set({ runningEntry: data, elapsedSeconds: Math.max(0, elapsed), loading: false });
   },
 
-  startTimer: async (description, projectId) => {
-    // Guard against multiple running entries
+  startTimer: async (description, projectId, billable) => {
     const existing = get().runningEntry;
     if (existing) return;
 
@@ -55,6 +55,7 @@ export const useTimerStore = create<TimerState>((set, get) => ({
         user_id: user.id,
         description,
         project_id: projectId,
+        billable,
         start_time: new Date().toISOString(),
       })
       .select()
@@ -85,7 +86,6 @@ export const useTimerStore = create<TimerState>((set, get) => ({
   updateRunningDescription: (description) => {
     const entry = get().runningEntry;
     if (!entry) return;
-    // Optimistic update + DB
     set({ runningEntry: { ...entry, description } });
     supabase
       .from('time_entries')
@@ -101,6 +101,17 @@ export const useTimerStore = create<TimerState>((set, get) => ({
     supabase
       .from('time_entries')
       .update({ project_id: projectId })
+      .eq('id', entry.id)
+      .then();
+  },
+
+  updateRunningBillable: (billable) => {
+    const entry = get().runningEntry;
+    if (!entry) return;
+    set({ runningEntry: { ...entry, billable } });
+    supabase
+      .from('time_entries')
+      .update({ billable })
       .eq('id', entry.id)
       .then();
   },

@@ -12,7 +12,7 @@ export default function ProjectsPage() {
 
   return (
     <div>
-      <h1 className="text-xl font-bold mb-4">Projects</h1>
+      <h1 className="text-xl font-bold mb-4 dark:text-white">Projects</h1>
       <ProjectForm />
       {error && <p className="text-sm text-red-600 mb-4">{error}</p>}
       <ProjectList />

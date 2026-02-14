@@ -37,6 +37,16 @@ export function getStartOfWeek(): string {
 }
 
 /**
+ * Get start of the current month in local timezone as ISO string.
+ */
+export function getStartOfMonth(): string {
+  const d = new Date();
+  d.setDate(1);
+  d.setHours(0, 0, 0, 0);
+  return d.toISOString();
+}
+
+/**
  * Format an ISO date string to a local readable format.
  */
 export function formatDateTime(iso: string): string {
@@ -63,4 +73,11 @@ export function toDatetimeLocalValue(iso: string): string {
  */
 export function fromDatetimeLocalValue(value: string): string {
   return new Date(value).toISOString();
+}
+
+/**
+ * Format currency amount.
+ */
+export function formatCurrency(amount: number): string {
+  return `$${amount.toFixed(2)}`;
 }
