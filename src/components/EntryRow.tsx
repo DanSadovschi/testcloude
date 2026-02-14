@@ -1,4 +1,4 @@
-import { FormEvent, useState } from 'react';
+import { type FormEvent, useState } from 'react';
 import { useEntryStore } from '../stores/entryStore';
 import { useProjectStore } from '../stores/projectStore';
 import {

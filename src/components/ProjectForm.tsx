@@ -1,4 +1,4 @@
-import { FormEvent, useState } from 'react';
+import { type FormEvent, useState } from 'react';
 import { useProjectStore } from '../stores/projectStore';
 import { PROJECT_COLORS } from '../utils/constants';
 
