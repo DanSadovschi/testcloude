@@ -123,3 +123,31 @@ CREATE POLICY "Users can insert own favorites"
   ON favorites FOR INSERT WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "Users can delete own favorites"
   ON favorites FOR DELETE USING (auth.uid() = user_id);
+
+-- Tasks table
+CREATE TABLE tasks (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  description TEXT DEFAULT '',
+  priority TEXT DEFAULT 'medium' CHECK (priority IN ('low', 'medium', 'high')),
+  status TEXT DEFAULT 'todo' CHECK (status IN ('todo', 'done')),
+  due_date DATE,
+  completed_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT now() NOT NULL
+);
+
+CREATE INDEX idx_tasks_user_id ON tasks(user_id);
+CREATE INDEX idx_tasks_user_due_date ON tasks(user_id, due_date);
+CREATE INDEX idx_tasks_user_status ON tasks(user_id, status);
+
+ALTER TABLE tasks ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own tasks"
+  ON tasks FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own tasks"
+  ON tasks FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update own tasks"
+  ON tasks FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "Users can delete own tasks"
+  ON tasks FOR DELETE USING (auth.uid() = user_id);

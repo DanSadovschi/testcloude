@@ -37,6 +37,21 @@ export interface Favorite {
   created_at: string;
 }
 
+export type TaskPriority = 'low' | 'medium' | 'high';
+export type TaskStatus = 'todo' | 'done';
+
+export interface Task {
+  id: string;
+  user_id: string;
+  title: string;
+  description: string;
+  priority: TaskPriority;
+  status: TaskStatus;
+  due_date: string | null;
+  completed_at: string | null;
+  created_at: string;
+}
+
 export type DatePreset = 'today' | 'week' | 'month' | 'all';
 
 export interface EntryFilters {

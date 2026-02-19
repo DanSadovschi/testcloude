@@ -11,6 +11,8 @@ import ProjectsPage from './pages/ProjectsPage';
 import EntriesPage from './pages/EntriesPage';
 import StatsPage from './pages/StatsPage';
 import TagsPage from './pages/TagsPage';
+import TasksPage from './pages/TasksPage';
+import TaskDashboardPage from './pages/TaskDashboardPage';
 
 export default function App() {
   const setSession = useAuthStore((s) => s.setSession);
@@ -58,6 +60,8 @@ export default function App() {
             <Route path="/entries" element={<EntriesPage />} />
             <Route path="/projects" element={<ProjectsPage />} />
             <Route path="/tags" element={<TagsPage />} />
+            <Route path="/tasks" element={<TasksPage />} />
+            <Route path="/tasks/dashboard" element={<TaskDashboardPage />} />
             <Route path="/stats" element={<StatsPage />} />
           </Route>
         </Route>
